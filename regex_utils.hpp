@@ -1,18 +1,26 @@
 #ifndef REGEX_UTILS_HPP
 #define REGEX_UTILS_HPP
 
-// NOTE: need to be pulled out
-#include "../text_utils/text_utils.hpp"
-#include "../meta_utils/meta_types.hpp"
 #include <regex>
 #include <unordered_map>
+
+#include "sbpt_generated_includes.hpp"
 
 namespace regex_utils {
 
 inline std::string surround_with(const std::string &s, const std::string &w) { return w + s + w; }
 inline std::string capture(const std::string &s) { return "(" + s + ")"; }
+inline std::string character_class(const std::vector<std::string> &chars) {
+    std::string result = "[";
+    for (const auto &ch : chars) {
+        result += ch;
+    }
+    result += "]";
+    return result;
+}
 
-// === Common regex constants ===
+inline std::string one_or_more(const std::string &character_class) { return character_class + "+"; }
+
 inline const std::string start_of_line = R"(^)";
 inline const std::string end_of_line = R"($)";
 inline const std::string any_char = R"(.)";
@@ -24,6 +32,7 @@ inline const std::string left_parenthesis = R"(\()";
 
 inline std::string wrap_parentheses(const std::string &s) { return left_parenthesis + s + right_parenthesis; }
 
+inline const std::string ws_char = R"(\s)";
 inline const std::string optional_ws = R"(\s*)";
 inline const std::string one_or_more_ws = R"(\s+)";
 inline const std::string digit = R"(\d)";
@@ -43,6 +52,15 @@ inline const std::string unsigned_int_regex = R"(\d+)";
 inline const std::string float_regex = R"(-?\d+(?:\.\d+)?)";
 inline const std::string captured_float_regex = wrap_parentheses(float_regex);
 
+inline const std::string float_tuple = surround_with(
+    wrap_parentheses(surround_with(text_utils::join({float_regex, float_regex}, optional_ws_comma), optional_ws)),
+    optional_ws);
+
+inline const std::string captured_float_tuple =
+    surround_with(wrap_parentheses(surround_with(
+                      text_utils::join({capture(float_regex), capture(float_regex)}, optional_ws_comma), optional_ws)),
+                  optional_ws);
+
 inline const std::string float_triplet =
     surround_with(wrap_parentheses(surround_with(
                       text_utils::join({float_regex, float_regex, float_regex}, optional_ws_comma), optional_ws)),
@@ -54,13 +72,12 @@ inline const std::string captured_float_triplet = surround_with(
         optional_ws)),
     optional_ws);
 
-inline const std::unordered_map<type, std::string> type_to_regex = {
-    {types::INT, int_regex},     {types::SHORT, int_regex},
-    {types::LONG, int_regex},    {types::UNSIGNED_INT, unsigned_int_regex}, // no negatives
-    {types::FLOAT, float_regex}, {types::DOUBLE, float_regex},              // same regex for float and double
-};
-
 inline std::regex function_signature_re(R"(^\s*([\w:<>]+(?:\s*[*&])?)\s+(\w+)\s*\((.*)\)\s*$)");
+
+inline const std::string type_char_class = character_class({word_char, ws_char, ":", "<", ">", ","});
+inline const std::string simple_template_type =
+    text_utils::join({capture(word), "<", capture(one_or_more(type_char_class)), ">"}, optional_ws);
+
 // std::string return_type = match[1];
 // std::string func_name = match[2];
 // std::string args_str = match[3];
