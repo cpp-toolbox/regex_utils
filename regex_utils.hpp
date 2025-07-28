@@ -10,6 +10,14 @@ namespace regex_utils {
 
 inline std::string surround_with(const std::string &s, const std::string &w) { return w + s + w; }
 inline std::string capture(const std::string &s) { return "(" + s + ")"; }
+inline std::vector<std::string> capture(const std::vector<std::string> &s) {
+    std::vector<std::string> result;
+    result.reserve(s.size());
+    for (const auto &elem : s) {
+        result.push_back(capture(elem));
+    }
+    return result;
+}
 inline std::string character_class(const std::vector<std::string> &chars) {
     std::string result = "[";
     for (const auto &ch : chars) {
@@ -45,12 +53,19 @@ inline const std::string word_char = R"(\w)";
 inline const std::string word = R"(\w+)";
 inline const std::string identifier = R"([A-Za-z_]\w*)";
 
+inline const std::string string_literal(R"("(?:[^"\\]|\\.)*")");
+
 inline const std::string optional_ws_comma = surround_with(",", optional_ws);
+
+inline std::string tuple_of(const std::vector<std::string> &regexes) {
+    return surround_with(wrap_parentheses(surround_with(text_utils::join(regexes, optional_ws_comma), optional_ws)),
+                         optional_ws);
+}
 
 inline const std::string int_regex = R"(-?\d+)";
 inline const std::string unsigned_int_regex = R"(\d+)";
 inline const std::string float_regex = R"(-?\d+(?:\.\d+)?)";
-inline const std::string captured_float_regex = wrap_parentheses(float_regex);
+inline const std::string captured_float_regex = capture(float_regex);
 
 inline const std::string float_tuple = surround_with(
     wrap_parentheses(surround_with(text_utils::join({float_regex, float_regex}, optional_ws_comma), optional_ws)),
