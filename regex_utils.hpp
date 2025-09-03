@@ -98,10 +98,10 @@ inline const std::string captured_float_triplet = surround_with(
         optional_ws)),
     optional_ws);
 
-inline const std::string type_char_class = character_class({word_char, ws_char, ":", "<", ">"});
+inline const std::string type_char_class = character_class({word_char, ws_char, ":", "<", ">", "(", ")"});
 inline const std::string type =
     capture(one_or_more(type_char_class) + non_capture_optional_group(optional_ws + character_class({"*", "&"})));
-inline std::regex function_signature_re(R"(^\s*([\w:<>]+(?:\s*[*&])?)\s+(\w+)\s*\((.*)\)\s*$)");
+inline std::regex function_signature_re(R"(^\s*([\w:<>()]+(?:\s*[*&])?)\s+(\w+)\s*\((.*)\)\s*$)");
 inline std::string function_signature_ree = start_of_line + optional_ws + type + one_or_more_ws + capture(word) +
                                             optional_ws + wrap_parentheses(capture(any_char_greedy)) + optional_ws +
                                             end_of_line;
