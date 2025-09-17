@@ -65,6 +65,7 @@ inline const std::string word = R"(\w+)";
 inline const std::string identifier = R"([A-Za-z_]\w*)";
 
 inline const std::string string_literal(R"("(?:[^"\\]|\\.)*")");
+inline const std::string char_literal(R"('(?:[^'\\]|\\.)')");
 
 inline const std::string optional_ws_comma = surround_with(",", optional_ws);
 
